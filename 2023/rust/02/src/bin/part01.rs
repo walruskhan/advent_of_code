@@ -8,6 +8,9 @@ fn main() {
     println!("Total: {}", get_total(input));
 }
 
+// macro for declaring lazily evaluated statics
+// https://docs.rs/lazy_static/latest/lazy_static/
+// allow static variables that requires computation at runtime
 lazy_static! {
     static ref PREAMBLE: Regex = Regex::new(r"Game (\d+):").unwrap();
     static ref PAIR: Regex = Regex::new(r"(\d+) (\w+)").unwrap();
