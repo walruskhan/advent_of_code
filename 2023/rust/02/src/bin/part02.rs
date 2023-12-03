@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 use lazy_static::lazy_static;
-use day02::add;
-use regex::{Captures, Regex};
+use regex::Regex;
 
 fn main() {
     let input = include_str!("../input.txt");
 
     let total = input
         .lines()
-        .map(|line| parseInput(line))
+        .map(|line| parse_input(line))
         .map(|data| get_power(data))
         .sum::<i32>();
 
@@ -25,19 +24,19 @@ lazy_static! {
 
 #[derive(Debug)]
 struct ParsedData<'a> {
-    gameNum: i32,
+    game_num: i32,
     games: Vec<HashMap<&'a str, i32>>,
 }
 
-fn parseInput(input: &str) -> ParsedData {
-    let gameNum = PREAMBLE.captures(input).unwrap().get(1).unwrap().as_str();
+fn parse_input(input: &str) -> ParsedData {
+    let game_num = PREAMBLE.captures(input).unwrap().get(1).unwrap().as_str();
 
     let games = input.split(": ")
         .last().unwrap()
         .split(";")
         .collect::<Vec<&str>>();
 
-    let gameData = games.iter().map(|game | {
+    let game_data = games.iter().map(|game | {
         let sets = game.split(",").collect::<Vec<&str>>();
         let sets: Vec<(&str, i32)> = sets.iter().map(|set| {
             let captures = &PAIR.captures(set).unwrap();
@@ -54,8 +53,8 @@ fn parseInput(input: &str) -> ParsedData {
     }).collect::<Vec<HashMap<&str, i32>>>();
 
     ParsedData {
-        gameNum: gameNum.to_string().parse::<i32>().unwrap(),
-        games: gameData,
+        game_num: game_num.to_string().parse::<i32>().unwrap(),
+        games: game_data,
     }
 }
 
@@ -68,7 +67,7 @@ fn get_power(data: ParsedData) -> i32 {
             let sample = *set.get(color).unwrap_or(&0);
             let current_max = *max_map.get(color).unwrap_or(&0);
 
-            if (sample > current_max) {
+            if sample > current_max {
                 max_map.insert(color, sample);
             }
         }
@@ -86,11 +85,11 @@ mod tests {
     #[no_mangle]
     fn example() {
         let cases = [
-            get_power(parseInput(r"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")),
-            get_power(parseInput(r"Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue")),
-            get_power(parseInput(r"Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red")),
-            get_power(parseInput(r"Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red")),
-            get_power(parseInput(r"Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"))
+            get_power(parse_input(r"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")),
+            get_power(parse_input(r"Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue")),
+            get_power(parse_input(r"Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red")),
+            get_power(parse_input(r"Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red")),
+            get_power(parse_input(r"Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"))
         ];
 
         itertools::assert_equal(cases.iter(), [48, 12, 1560, 630, 36].iter());
