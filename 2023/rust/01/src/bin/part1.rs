@@ -7,7 +7,7 @@ lazy_static! {
 }
 
 fn main() {
-    let input = include_str!("../input_part1.txt").to_string();
+    let input = include_str!("../input.txt").to_string();
 
     let numbers = process(input);
     let total = numbers.iter().fold(0, |acc, val| acc + val);
