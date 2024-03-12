@@ -24,6 +24,7 @@ fn process(input: String) -> Vec<i32> {
             .map(|m| m.as_str().to_owned())
             .collect::<Vec<String>>();
 
+        // Even if there is just one match per line, repeat match twice
         let a = matches.first().unwrap().as_str();
         let b = matches.last().unwrap().as_str();
 

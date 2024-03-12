@@ -37,6 +37,7 @@ fn process(input: String) -> Vec<i32> {
             .map(|m| m.as_str().to_owned())
             .collect::<Vec<String>>();
 
+        // Even if there is just one match per line, repeat match twice
         let a = normalize(matches.first().unwrap().as_str());
         let b = normalize(matches.last().unwrap().as_str());
 
@@ -50,6 +51,7 @@ fn process(input: String) -> Vec<i32> {
 
 #[cfg(test)]
 mod tests {
+    use std::thread::AccessError;
     use log::debug;
     use super::*;
 
@@ -64,5 +66,18 @@ mod tests {
         assert_eq!(numbers.len(), 7);
         assert_eq!(total, 281);
         itertools::assert_equal(&numbers, [29i32, 83i32, 13i32, 24i32, 42i32, 14i32, 76i32].iter());
+    }
+    
+    #[test]
+    #[no_mangle]
+    fn row_with_one_number() {
+        let input = "2htzsvdhvqvdjv".to_string();
+        
+        let numbers = process(input);
+        let total = numbers.iter().fold(0, |AccessError, val| AccessError + val);
+        
+        assert_eq!(numbers.len(), 1);
+        assert_eq!(total, 22);
+        itertools::assert_equal(&numbers, [22i32].iter());
     }
 }

@@ -7,61 +7,109 @@ use regex::Regex;
 #[derive(Debug)]
 struct Almanac<'a> {
     pub seeds: Vec<usize>,
-    pub dicts: HashMap<(&'a str, &'a str), Vec<RangeMapper>>,
+    pub dicts: HashMap<(&'a str, &'a str), Vec<RangeMapper<'a>>>,
 }
 
 impl<'a> Almanac<'a> {
-    pub fn create_path_to(self: &Self, dest: &str) -> Option<Vec<&str>> {
-        let mappers = self.dicts.keys().collect::<Vec<&(&str, &str)>>();
-
-        let mut open = Vec::<&str>::new();
-        let mut visited = Vec::<&str>::new();
-        let mut paths = Vec::<Vec<&str>>::new();
-
-        open.push("seed");
-        paths.push(vec!["seed"]);
-
-        while !visited.contains(&dest) && !open.is_empty() { // while we haven't found the destination and there are still nodes to explore
-            let curr = open.pop().unwrap();
-
-            // We already have a shorter path to this node
-            if visited.contains(&curr) {
-                continue;
-            }
-
-            for &mapper in &mappers {
-                if mapper.0 == curr { // we found a transition from curr -> other
-
-                    // push new state to visited and open queue
-                    visited.push(mapper.1);
-                    open.push(mapper.1);
-
-                    // Append to paths whose current state is new state
-                    for mut path in &mut paths {
-                        if path.last().unwrap() == &curr {
-                            path.push(mapper.1);
-                        }
-                    }
-                }
-            }
-        }
-        
-        let path = paths.iter().find(|x| x.last().unwrap() == &dest);
-        println!("path: {:?}", path);
-        
-        if let Some(path) = path {
-            return Some(path.clone());
-        }
-        
-        None
-        
-
-
-        // given start node "seeds"
-        // find transitions from "seeds" to other nodes
-        // while transitions does not contain end state
-        // find transitions from current leaves to other nodes not in visited list
+    pub  fn get_mappers(self: &Self) -> Vec<&RangeMapper> {
+        self.dicts.values()
+            .flatten()
+            .collect::<Vec<&RangeMapper>>()
     }
+    
+    pub fn resolve(self: &Self, id: usize, dest: &str) {
+        let mappers = self.get_mappers();
+        let mut path = Vec::<&(&str, usize, usize)>::new(); // (type, index, value)
+        let mut curr: &(&str, usize, usize) = &("seed", 0, id);
+        path.push(&curr);
+        
+        while curr.0 != dest {
+            let mapper = mappers.iter()
+                .enumerate()
+                .skip(curr.1)
+                .find(|(i, m)| m.from == curr.0 && m.contains(curr.2));
+            
+            if let Some(m) = &mapper {
+                curr = &(m.1.to, m.0, m.1.map(curr.2).unwrap());
+                path.push(curr);
+            }
+        }
+        
+        
+        
+        // let mappers = self.dicts.iter()
+        //     .map(|(k, v)| {
+        //         v.iter().map(|m| (k, m))
+        //     })
+        //     .flatten()
+        //     .collect::<Vec<(&(&str, &str), &RangeMapper)>>();
+        // let mut curr = ("seed", 0, id); // (type, index, value)
+        // 
+        // while(curr.0 != dest) {
+            // let mapper = mappers.iter()
+            //     .enumerate()
+            //     .skip(curr.1)
+            //     .find(|(i, mapper)| mapper.contains(curr.2));
+            
+            // if let Some(mapper) = mapper {
+            //     curr = (mapper.0, mapper.1.map(curr.2).unwrap());
+            // }
+        }
+    }
+    
+    
+    // 
+    // pub fn create_path_to(self: &Self, dest: &str) -> Option<Vec<&str>> {
+    //     let mappers = self.dicts.keys().collect::<Vec<&(&str, &str)>>();
+    // 
+    //     let mut open = Vec::<&str>::new();
+    //     let mut visited = Vec::<&str>::new();
+    //     let mut paths = Vec::<Vec<&str>>::new();
+    // 
+    //     open.push("seed");
+    //     paths.push(vec!["seed"]);
+    // 
+    //     while !visited.contains(&dest) && !open.is_empty() { // while we haven't found the destination and there are still nodes to explore
+    //         let curr = open.pop().unwrap();
+    // 
+    //         // We already have a shorter path to this node
+    //         if visited.contains(&curr) {
+    //             continue;
+    //         }
+    // 
+    //         for &mapper in &mappers {
+    //             if mapper.0 == curr { // we found a transition from curr -> other
+    // 
+    //                 // push new state to visited and open queue
+    //                 visited.push(mapper.1);
+    //                 open.push(mapper.1);
+    // 
+    //                 // Append to paths whose current state is new state
+    //                 for mut path in &mut paths {
+    //                     if path.last().unwrap() == &curr {
+    //                         path.push(mapper.1);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     
+    //     let path = paths.iter().find(|x| x.last().unwrap() == &dest);
+    //     println!("path: {:?}", path);
+    //     
+    //     if let Some(path) = path {
+    //         return Some(path.clone());
+    //     }
+    //     
+    //     None
+    //     
+    // 
+    // 
+    //     // given start node "seeds"
+    //     // find transitions from "seeds" to other nodes
+    //     // while transitions does not contain end state
+    //     // find transitions from current leaves to other nodes not in visited list
+    // }
 
     // pub fn translate(self: &Self, id: usize, to: &str) -> usize {
     //     let mut curr = "seed";
@@ -70,17 +118,19 @@ impl<'a> Almanac<'a> {
     //         if let Some(mapper) = self.dicts.get(curr) {}
     //     }
     // }
-}
+// }
 
 #[derive(Debug)]
-struct RangeMapper {
+struct RangeMapper<'a> {
     pub src: usize,
     pub dest: usize,
     pub range: usize,
+    pub from: &'a str,
+    pub to: &'a str
 }
 
-impl RangeMapper {
-    fn new(line: &str) -> RangeMapper {
+impl<'a> RangeMapper<'a> {
+    fn new(line: &str, from: &'a str, to: &'a str) -> RangeMapper<'a> {
         let regex = Regex::new(r"([\s\d]*)$").unwrap();
         if let Some(captures) = regex.captures(line.trim()) {
             let numbers = captures.get(1).unwrap()
@@ -105,6 +155,8 @@ impl RangeMapper {
                 src,
                 dest,
                 range,
+                from,
+                to
             };
         }
 
@@ -168,7 +220,7 @@ fn get_numbers(input: &str) -> Option<Vec<usize>> {
     None
 }
 
-pub fn parse(input: &str) -> Almanac {
+pub fn parse<'a>(input: &'a str) -> Almanac {
     let mut maps = HashMap::<(&str, &str), Vec<RangeMapper>>::new();
     let mut seeds = Vec::<usize>::new();
 
@@ -197,9 +249,9 @@ pub fn parse(input: &str) -> Almanac {
             } else { // handle all other sections
                 if maps.contains_key(&section_name) {
                     maps.get_mut(&section_name).unwrap()
-                        .push(RangeMapper::new(line));
+                        .push(RangeMapper::<'a>::new(line, section_name.0, section_name.1));
                 } else {
-                    maps.insert(section.unwrap(), vec![RangeMapper::new(line)]);
+                    maps.insert(section.unwrap(), vec![RangeMapper::<'a>::new(line, section_name.0, section_name.1)]);
                 }
             }
         }
@@ -263,28 +315,34 @@ mod tests {
 
     #[test]
     fn parse_mapper() {
-        let foo = RangeMapper::new("50 98 2");
+        let foo = RangeMapper::new("50 98 2", "foo", "bar");
         assert_eq!(foo.src, 98);
         assert_eq!(foo.dest, 50);
         assert_eq!(foo.range, 2);
+        assert_eq!(foo.from, "foo");
+        assert_eq!(foo.to, "bar");
     }
 
     #[test]
     fn contains() {
-        let foo = RangeMapper::new("50 98 2");
+        let foo = RangeMapper::new("50 98 2", "foo", "bar");
         assert_eq!(foo.contains(97), false);
         assert!(foo.contains(98));
         assert!(foo.contains(99));
         assert_eq!(foo.contains(100), false);
+        assert_eq!(foo.from, "foo");
+        assert_eq!(foo.to, "bar");
     }
 
     #[test]
     fn map() {
-        let foo = RangeMapper::new("50 98 2");
+        let foo = RangeMapper::new("50 98 2", "foo", "bar");
         assert_eq!(foo.map(97), None);
         assert_eq!(foo.map(98), Some(50));
         assert_eq!(foo.map(99), Some(51));
         assert_eq!(foo.map(100), None);
+        assert_eq!(foo.from, "foo");
+        assert_eq!(foo.to, "bar");
     }
 
     #[test]
@@ -308,15 +366,22 @@ mod tests {
         assert_eq!(atlas.dicts.get(&("foo", "bar")).unwrap().get(0).unwrap().src, 8);
         assert_eq!(atlas.dicts.get(&("foo", "bar")).unwrap().get(0).unwrap().dest, 7);
         assert_eq!(atlas.dicts.get(&("foo", "bar")).unwrap().get(0).unwrap().range, 9);
+        assert_eq!(atlas.dicts.get(&("foo", "bar")).unwrap().get(0).unwrap().from, "foo");
+        assert_eq!(atlas.dicts.get(&("foo", "bar")).unwrap().get(0).unwrap().to, "bar");
+        
 
         assert!(atlas.dicts.contains_key(&("bar", "baz")));
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().len(), 2);
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(0).unwrap().src, 11);
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(0).unwrap().dest, 10);
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(0).unwrap().range, 12);
+        assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(0).unwrap().from, "bar");
+        assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(0).unwrap().to, "baz");
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(1).unwrap().src, 14);
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(1).unwrap().dest, 13);
         assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(1).unwrap().range, 15);
+        assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(1).unwrap().from, "bar");
+        assert_eq!(atlas.dicts.get(&("bar", "baz")).unwrap().get(1).unwrap().to, "baz");
     }
     
     #[test]
@@ -330,8 +395,8 @@ mod tests {
         
         let almanac = parse(input);
         println!("{:?}", almanac);
-        let path = almanac.create_path_to("bar");
-        println!("{:?}", path);
+        // let path = almanac.create_path_to("bar");
+        // println!("{:?}", path);
     }
 
     #[test]
