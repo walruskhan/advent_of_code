@@ -3,7 +3,7 @@ use regex::Regex;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref RE: Regex = Regex::new(r"(\d|one|two|three|four|five|six|seven|eight|nine)").unwrap();
+    static ref RE: Regex = Regex::new(r"(\d)").unwrap();
 }
 
 fn main() {
@@ -15,31 +15,34 @@ fn main() {
     println!("Total: {}", total);
 }
 
-pub fn normalize(val: &str) -> &str {
-    match val.trim().to_lowercase().as_str() {
-        "one" => "1",
-        "two" => "2",
-        "three" => "3",
-        "four" => "4",
-        "five" => "5",
-        "six" => "6",
-        "seven" => "7",
-        "eight" => "8",
-        "nine" => "9",
-        _ => val
-    }
-}
-
 fn process(input: String) -> Vec<i32> {
+    let re_map = [
+        ("one", "o1e"),  
+        ("two", "t2o"),  
+        ("three", "t3e"),  
+        ("four", "f4r"),  
+        ("five", "f5e"),  
+        ("six", "s6x"),  
+        ("seven", "s7n"),  
+        ("eight", "e8t"),  
+        ("nine", "n9e"),  
+    ];
+    
     input.lines().map(|line| {
+        let mut text = line.to_owned();
+        
+        re_map.iter().for_each(|(needle, repl) | {
+            text = text.replace(needle, repl);
+        });
+        
         // Gather all integer matches, convert into `String` and collect into `Vec`
-        let matches = RE.find_iter(line)
+        let matches = RE.find_iter(text.as_str())
             .map(|m| m.as_str().to_owned())
             .collect::<Vec<String>>();
 
         // Even if there is just one match per line, repeat match twice
-        let a = normalize(matches.first().unwrap().as_str());
-        let b = normalize(matches.last().unwrap().as_str());
+        let a = matches.first().unwrap().as_str();
+        let b = matches.last().unwrap().as_str();
 
         let res = a.to_string() + b;
 
@@ -74,7 +77,7 @@ mod tests {
         let input = "2htzsvdhvqvdjv".to_string();
         
         let numbers = process(input);
-        let total = numbers.iter().fold(0, |AccessError, val| AccessError + val);
+        let total = numbers.iter().fold(0, |acc, val| acc + val);
         
         assert_eq!(numbers.len(), 1);
         assert_eq!(total, 22);
@@ -83,37 +86,14 @@ mod tests {
     
     #[test]
     #[no_mangle]
-    fn normalize_numbers() {
-        assert_eq!(normalize("oNe"), "1");
-        assert_eq!(normalize("tWo"), "2");
-        assert_eq!(normalize("ThRee"), "3");
-        assert_eq!(normalize("fOur"), "4");
-        assert_eq!(normalize("fiVe"), "5");
-        assert_eq!(normalize("siX"), "6");
-        assert_eq!(normalize("Seven"), "7");
-        assert_eq!(normalize("Eight"), "8");
-        assert_eq!(normalize("nIne"), "9");
-        assert_eq!(normalize("1"), "1");
-        assert_eq!(normalize("2"), "2");
-        assert_eq!(normalize("3"), "3");
-        assert_eq!(normalize("4"), "4");
-        assert_eq!(normalize("5"), "5");
-        assert_eq!(normalize("6"), "6");
-        assert_eq!(normalize("7"), "7");
-        assert_eq!(normalize("8"), "8");
-        assert_eq!(normalize("9"), "9");
-    }
-    
-    #[test]
-    #[no_mangle]
     fn combined_numbers() {
-        let input = "eightwo".to_string();
+        let input = "eightwone".to_string();
         
         let numbers = process(input);
-        let total = numbers.iter().fold(0, |AccessError, val| AccessError + val);
+        let total = numbers.iter().fold(0, |acc, val| acc + val);
 
-        assert_eq!(numbers.len(), 2);
-        assert_eq!(total, 10);
-        itertools::assert_equal(&numbers, [10i32].iter());
+        assert_eq!(numbers.len(), 1);
+        assert_eq!(total, 81);
+        itertools::assert_equal(&numbers, [81i32].iter());
     }
 }
