@@ -16,7 +16,7 @@ fn main() {
 }
 
 pub fn normalize(val: &str) -> &str {
-    match val {
+    match val.trim().to_lowercase().as_str() {
         "one" => "1",
         "two" => "2",
         "three" => "3",
@@ -79,5 +79,28 @@ mod tests {
         assert_eq!(numbers.len(), 1);
         assert_eq!(total, 22);
         itertools::assert_equal(&numbers, [22i32].iter());
+    }
+    
+    #[test]
+    #[no_mangle]
+    fn normalize_numbers() {
+        assert_eq!(normalize("oNe"), "1");
+        assert_eq!(normalize("tWo"), "2");
+        assert_eq!(normalize("ThRee"), "3");
+        assert_eq!(normalize("fOur"), "4");
+        assert_eq!(normalize("fiVe"), "5");
+        assert_eq!(normalize("siX"), "6");
+        assert_eq!(normalize("Seven"), "7");
+        assert_eq!(normalize("Eight"), "8");
+        assert_eq!(normalize("nIne"), "9");
+        assert_eq!(normalize("1"), "1");
+        assert_eq!(normalize("2"), "2");
+        assert_eq!(normalize("3"), "3");
+        assert_eq!(normalize("4"), "4");
+        assert_eq!(normalize("5"), "5");
+        assert_eq!(normalize("6"), "6");
+        assert_eq!(normalize("7"), "7");
+        assert_eq!(normalize("8"), "8");
+        assert_eq!(normalize("9"), "9");
     }
 }
