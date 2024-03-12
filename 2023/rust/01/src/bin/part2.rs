@@ -103,4 +103,17 @@ mod tests {
         assert_eq!(normalize("8"), "8");
         assert_eq!(normalize("9"), "9");
     }
+    
+    #[test]
+    #[no_mangle]
+    fn combined_numbers() {
+        let input = "eightwo".to_string();
+        
+        let numbers = process(input);
+        let total = numbers.iter().fold(0, |AccessError, val| AccessError + val);
+
+        assert_eq!(numbers.len(), 2);
+        assert_eq!(total, 10);
+        itertools::assert_equal(&numbers, [10i32].iter());
+    }
 }
