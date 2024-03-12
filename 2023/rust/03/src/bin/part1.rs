@@ -7,6 +7,13 @@ fn main() {
         // if number found, append to current
         // check neighbours for symbol
             // if symbol found, set flag to save number on complete
+
+    let input = include_str!("../input.txt");
+    
+    let mut puzzle = Input::new(input);
+    puzzle.process();
+    
+    println!("Total is {}", puzzle.total);
 }
 
 #[derive(Debug)]
