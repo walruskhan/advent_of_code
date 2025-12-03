@@ -1,0 +1,2 @@
+run:
+    zig test -femit-bin=zig-out/bin/main src/main.zig
