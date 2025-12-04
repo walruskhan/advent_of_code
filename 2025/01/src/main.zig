@@ -18,7 +18,7 @@ fn read_file(allocator: Allocator, path: []const u8) ![]u8 {
     return buffer;
 }
 
-pub fn main() !void {
+pub fn part1() !void {
     const allocator = std.heap.page_allocator;
 
     const raw_text = try read_file(allocator, "input2.txt");
@@ -55,68 +55,10 @@ pub fn main() !void {
     }
 
     std.debug.print("Final position = {d} code = {d}", .{ position, amount_zero });
+}
 
-    // var line_iter = std.mem.splitScalar(u8, test_data, '\n');
-
-    // var r: Reader = .fixed("ab\ncd");
-    // const result = r.takeDelimiterInclusive('\n');
-    // r.tossBuffered();
-    // std.debug.print("{any}", .{result});
-
-    // const result2 = r.takeDelimiterInclusive('\n');
-    // _ = try r.take(1);
-    // std.debug.print("{any}", .{result2});
-
-    // const result3 = r.takeDelimiterInclusive('\n');
-    // std.debug.print("{any}", .{result3});
-
-    // const file = try std.fs.cwd().openFile("input1.txt", .{});
-    // defer file.close();
-
-    // var read_buffer: [1024]u8 = undefined;
-    // var reader = file.reader(&read_buffer);
-
-    // while (reader.interface.takeDelimiterExclusive('\n')) |line| {
-    //     std.debug.print("{s}", .{line});
-    // } else |err| switch (err) {
-    //     error.EndOfStream => {},
-    //     error.ReadFailed => return err,
-    //     error.StreamTooLong => return err,
-    // }
-
-    // var stdout_buffer: [512]u8 = undefined;
-    // const stdout: std.Io.Writer = stdout_writer.interface;
-
-    // const file = try std.fs.cwd().openFile("input1.txt", .{ .mode = .read_only });
-    // defer file.close();
-
-    // var read_buffer: [1024]u8 = undefined;
-    // var reader: std.io.Reader = file.reader(&read_buffer).interface;
-
-    // while (reader.takeDelimiterExclusive('\n')) |line| {
-    //     // `line` is a slice of bytes (excluding the delimiter)
-    //     // do whatever you want with it
-
-    //     try stdout.writeAll("You typed: ");
-    //     try stdout.print("{s}", .{line});
-    //     try stdout.writeAll("\n...\n");
-    //     try stdout.writeAll("Type something: ");
-
-    //     try stdout.flush();
-    // } else |err| switch (err) {
-    //     error.EndOfStream => {
-    //         // reached end
-    //         // the normal case
-    //     },
-    //     error.StreamTooLong => {
-    //         // the line was longer than the internal buffer
-    //         return err;
-    //     },
-    //     error.ReadFailed => {
-    //         // the read failed
-    //         return err;
-    //     },
-    // }
+pub fn main() !void {
+    try part1();
 }
 
 test "simple test" {
