@@ -5,8 +5,6 @@ const Reader = std.Io.Reader;
 const File = std.fs.File;
 const Allocator = std.mem.Allocator;
 
-const test_data = @embedFile("../input1.txt");
-
 fn read_file(allocator: Allocator, path: []const u8) ![]u8 {
     var file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
@@ -23,12 +21,40 @@ fn read_file(allocator: Allocator, path: []const u8) ![]u8 {
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    const raw_text = try read_file(allocator, "input1.txt");
+    const raw_text = try read_file(allocator, "input2.txt");
 
-    var lines = std.mem.splitAny(u8, raw_text, "\n");
+    var position: i32 = 50;
+    var amount_zero: i32 = 0;
+
+    var lines = std.mem.splitScalar(u8, raw_text, '\n');
     while (lines.next()) |line| {
-        std.debug.print("{s}", .{line});
+        // std.debug.print("{s}", .{line});
+
+        const dir: u8 = line[0];
+        const amt: i32 = try std.fmt.parseInt(i32, line[1..], 10);
+
+        if (dir == 'L' or dir == 'l') {
+            position -= amt;
+        } else {
+            position += amt;
+        }
+
+        while (position < 0) {
+            position += 100;
+        }
+
+        while (position >= 100) {
+            position -= 100;
+        }
+
+        if (position == 0) {
+            amount_zero += 1;
+        }
+
+        std.debug.print("Rotated {c} by {d} to point at {d}\n", .{ dir, amt, position });
     }
+
+    std.debug.print("Final position = {d} code = {d}", .{ position, amount_zero });
 
     // var line_iter = std.mem.splitScalar(u8, test_data, '\n');
 
