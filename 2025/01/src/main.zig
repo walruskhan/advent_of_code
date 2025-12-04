@@ -24,7 +24,11 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     const raw_text = try read_file(allocator, "input1.txt");
-    std.debug.print("{s}", .{raw_text});
+
+    var lines = std.mem.splitAny(u8, raw_text, "\n");
+    while (lines.next()) |line| {
+        std.debug.print("{s}", .{line});
+    }
 
     // var line_iter = std.mem.splitScalar(u8, test_data, '\n');
 
