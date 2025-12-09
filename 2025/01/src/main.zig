@@ -28,6 +28,43 @@ pub fn part1() !void {
 
     var lines = std.mem.splitScalar(u8, raw_text, '\n');
     while (lines.next()) |line| {
+        const dir: u8 = line[0];
+        const raw_amt: i32 = try std.fmt.parseInt(i32, line[1..], 10);
+
+        const delta: i32 = @intCast(@abs(raw_amt) % 100);
+
+        if (dir == 'L' or dir == 'l') {
+            position -= delta;
+        } else {
+            position += delta;
+        }
+
+        if (position < 0) {
+            position += 100;
+        } else if (position >= 100) {
+            position -= 100;
+        }
+
+        if (position == 0) {
+            amount_zero += 1;
+        }
+
+        std.debug.print("Rotated {c} by {d} ({d}) to point at {d}\n", .{ dir, raw_amt, delta, position });
+    }
+
+    std.debug.print("Final position = {d} code = {d}", .{ position, amount_zero });
+}
+
+pub fn part2() !void {
+    const allocator = std.heap.page_allocator;
+
+    const raw_text = try read_file(allocator, "input2.txt");
+
+    var position: i32 = 50;
+    var amount_zero: i32 = 0;
+
+    var lines = std.mem.splitScalar(u8, raw_text, '\n');
+    while (lines.next()) |line| {
         // std.debug.print("{s}", .{line});
 
         const dir: u8 = line[0];
@@ -39,12 +76,17 @@ pub fn part1() !void {
             position += amt;
         }
 
+        const v = @abs(amt) / 100;
+        amount_zero += @intCast(v);
+
         while (position < 0) {
             position += 100;
+            amount_zero += 1;
         }
 
         while (position >= 100) {
             position -= 100;
+            amount_zero += 1;
         }
 
         if (position == 0) {
